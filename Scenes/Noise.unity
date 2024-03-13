@@ -247,10 +247,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cb4b7b893bc49845acfe9fc1d8872b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resolution: 128
-  dimension: 2
-  seed: 0
   noiseCompute: {fileID: 7200000, guid: 16750369f94578445a655e76d96039c0, type: 3}
+  noiseType: 4
+  resolution: 253
+  seed: 0
+  frequency: 4
+  isTiling: 1
+  octaves: 1
+  sliceDepth: 0
+  logTimer: 0
 --- !u!64 &1893449109
 MeshCollider:
   m_ObjectHideFlags: 0

@@ -11,8 +11,9 @@ struct v2f
 };
 
 int _Resolution;
-sampler2D _NoiseTex;
+sampler3D _NoiseTex;
 float4 _NoiseTex_ST;
+float _SampleSlice;
 
 v2f vert (a2v v)
 {
@@ -24,6 +25,6 @@ v2f vert (a2v v)
 
 float4 frag (v2f i) : SV_Target
 {
-    float4 col = tex2D(_NoiseTex, i.uv);
+    float4 col = tex3D(_NoiseTex, float3(i.uv, _SampleSlice));
     return col;
 }

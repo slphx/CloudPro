@@ -2,7 +2,7 @@ Shader "Unlit/NoisePlane"
 {
     Properties
     {
-        _NoiseTex("Texture", 2D) = "white" {}
+        _NoiseTex("Texture", 3D) = "white" {}
     }
     SubShader
     {

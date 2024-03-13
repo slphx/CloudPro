@@ -1,0 +1,70 @@
+#pragma kernel NoiseGenMain
+
+#define THREAD_GROUP_SIZE 8
+
+#include "Noiselib/NoiseLib.hlsl"
+
+// enum NoiseType {0:Hash, 1:Perlin};
+int _NoiseType;
+int _Resolution;
+float _InvResolution;
+int _Seed;
+float _Frequency;
+bool _IsTiling;
+int _Octaves;
+bool _Inverse;
+
+RWTexture3D<float4> _Noise;
+
+float getNoise(float3 pos, float frequency) {
+    float noise = 0.0;
+    // Perlin Noise 2D
+    if (_NoiseType == 1) {
+        noise = 0.5 + 0.5 * Perlin2D(pos.xy, frequency, _IsTiling);
+    }
+    // Perlin Noise 3D
+    else if (_NoiseType == 2) {
+        noise = 0.5 + 0.5 * Perlin3D(pos.xyz, frequency, _IsTiling);
+    }
+    // Worley Noise 2D
+    else if (_NoiseType == 3) {
+        noise = Worley2D(pos.xy, frequency, _IsTiling);
+    }
+    // Worley Noise 3D
+    else if (_NoiseType == 4) {
+        noise = Worley3D(pos.xyz, frequency, _IsTiling);
+    }
+    return noise;
+}
+
+[numthreads(THREAD_GROUP_SIZE, THREAD_GROUP_SIZE, THREAD_GROUP_SIZE)]
+void NoiseGenMain(uint3 id: SV_DispatchThreadID) {
+    float3 pos = float3(id.x, id.y, id.z) * _InvResolution;
+
+    const float G = 0.5,    // 振幅变化倍率
+                FG = 2.0;   // 频率变化倍率
+
+    float   value = 0.0, 
+            frequency = _Frequency,
+            amplitude = 1.0,
+            sumAmplitude = 0.0;
+
+    pos += _Seed * hash13(_Seed);
+
+    // Hash Noise
+    if (_NoiseType == 0) {
+        value += 0.5 + 0.5 * hash31(id.xyz + 
+                            _Seed * float3(hash11(id.x + _Seed), hash11(id.y + _Seed), hash11(id.z + _Seed)));
+    } else {
+        for (int i=0; i<_Octaves; i++) {
+            sumAmplitude += amplitude;
+            value += amplitude * getNoise(pos, frequency);
+            amplitude *= G;
+            frequency *= FG;
+        }
+        value /= sumAmplitude;
+        if (_Inverse) value = 1.0 - value;
+    }
+
+    _Noise[id.xyz] = value;
+}
