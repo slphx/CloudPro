@@ -1,8 +1,14 @@
-# CloudPro —— 基于 Unity 的体积云渲染实战
+# CloudPro —— 基于 Unity 的体积云渲染实战（开发中）
+
+## Step1. 噪声生成
+
+![noise](./assets/noise.gif)
 
 
 
+## Step2. 初步可视化云层
 
+![image-20240317154315618](./assets/image-20240317154315618.png)
 
 
 

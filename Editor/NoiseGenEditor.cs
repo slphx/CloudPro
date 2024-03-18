@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(NoiseGen))]
+[CustomEditor(typeof(NoiseGenerator))]
 public class NoiseGenEditor: Editor {
 
-    NoiseGen noiseGen;
+    NoiseGenerator noiseGenerator;
     
     void OnEnable() {
-        noiseGen = (NoiseGen) target;
+        noiseGenerator = (NoiseGenerator) target;
     }
 
     public override void OnInspectorGUI() {
@@ -18,13 +18,13 @@ public class NoiseGenEditor: Editor {
         EditorGUILayout.PropertyField(this.serializedObject.FindProperty("resolution"));
         EditorGUILayout.PropertyField(this.serializedObject.FindProperty("seed"));
 
-        if (noiseGen.noiseType != NoiseGen.NoiseType.Hash) {
+        if (noiseGenerator.noiseType != NoiseGenerator.NoiseType.Hash) {
             EditorGUILayout.PropertyField(this.serializedObject.FindProperty("frequency"));
             EditorGUILayout.PropertyField(this.serializedObject.FindProperty("isTiling"));
             EditorGUILayout.PropertyField(this.serializedObject.FindProperty("octaves"));
             EditorGUILayout.PropertyField(this.serializedObject.FindProperty("sliceDepth"));
             EditorGUILayout.PropertyField(this.serializedObject.FindProperty("inverse"));
-
+            EditorGUILayout.PropertyField(this.serializedObject.FindProperty("visualize"));
         }
 
         EditorGUILayout.PropertyField(this.serializedObject.FindProperty("logTimer"));
