@@ -2,6 +2,8 @@
 
 ## Step1. 噪声生成
 
+![image-20240317154424674](./assets/image-20240317154424674.png)
+
 ![noise](./assets/noise.gif)
 
 
