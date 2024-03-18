@@ -34,7 +34,22 @@ float getNoise(float3 pos, float frequency) {
     else if (_NoiseType == 4) {
         noise = Worley3D(pos.xyz, frequency, _IsTiling);
     }
+
     return noise;
+}
+
+float dilatePerlinWorley(float p, float w, float x){
+	float curve = 0.75;
+	if(x < 0.5){
+		x /= 0.5;
+		float n = p + w * x;
+		return n * lerp(1, 0.5, pow(x,curve));
+	}
+	else{
+		x = (x-0.5)/0.5;
+		float n = w + p *(1.0 - x);
+		return n * lerp(0.5, 1.0, pow(x, 1.0/curve));
+	}
 }
 
 [numthreads(THREAD_GROUP_SIZE, THREAD_GROUP_SIZE, THREAD_GROUP_SIZE)]
@@ -55,7 +70,7 @@ void NoiseGenMain(uint3 id: SV_DispatchThreadID) {
     if (_NoiseType == 0) {
         value += 0.5 + 0.5 * hash31(id.xyz + 
                             _Seed * float3(hash11(id.x + _Seed), hash11(id.y + _Seed), hash11(id.z + _Seed)));
-    } else {
+    } else if (_NoiseType <= 4){
         for (int i=0; i<_Octaves; i++) {
             sumAmplitude += amplitude;
             value += amplitude * getNoise(pos, frequency);
@@ -64,6 +79,33 @@ void NoiseGenMain(uint3 id: SV_DispatchThreadID) {
         }
         value /= sumAmplitude;
         if (_Inverse) value = 1.0 - value;
+    } else if (_NoiseType == 5) {
+
+        float v0 = 0.0, f0 = 4, a0 = 1.0, s0 = 0.0,
+              v1 = 0.0, f1 = _Frequency, a1 = 1.0, s1 = 0.0;
+        // Perlein-Worley Noise
+        for (int j=0; j<_Octaves; j++) {
+            s0 += a0;
+            v0 += a0 * (0.5 + 0.5 * Perlin3D(pos.xyz, f0, _IsTiling));
+            a0 *= G;
+            f0 *= FG;
+        }
+        v0 /= s0;
+
+        for (int i=0; i<_Octaves; i++) {
+            s1 += a1;
+            v1 += a1 * Worley3D(pos.xyz, f1, _IsTiling);
+            a1 *= G;
+            f1 *= FG;
+        }
+        v1 /= s1;
+        
+        float Perlin = v0;
+        float Worley = 1 - v1;
+        value = dilatePerlinWorley(Perlin, Worley, 0.8);
+        // value = (a * v0 + (1 - a) * (1 - v1));
+
+        // if (_Inverse) value = 1 - value;
     }
 
     _Noise[id.xyz] = value;
