@@ -6,10 +6,10 @@ Shader "Hidden/PostProcessing/RayMarchBox"
         Pass
         {
             HLSLPROGRAM
-            #pragma vertex VertDefault
-            #pragma fragment frag
-            #include "Packages/com.unity.postprocessing/PostProcessing/Shaders/StdLib.hlsl"
-            #include "RayMarchBox.hlsl"
+            // #pragma vertex VertDefault
+            // #pragma fragment frag
+            // #include "Packages/com.unity.postprocessing/PostProcessing/Shaders/StdLib.hlsl"
+            // #include "RayMarchBox.hlsl"
             ENDHLSL
         }
     }

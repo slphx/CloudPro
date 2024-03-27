@@ -20,11 +20,11 @@ float getNoise(float3 pos, float frequency) {
     float noise = 0.0;
     // Perlin Noise 2D
     if (_NoiseType == 1) {
-        noise = 0.5 + 0.5 * Perlin2D(pos.xy, frequency, _IsTiling);
+        noise = Perlin2D(pos.xy, frequency, _IsTiling);
     }
     // Perlin Noise 3D
     else if (_NoiseType == 2) {
-        noise = 0.5 + 0.5 * Perlin3D(pos.xyz, frequency, _IsTiling);
+        noise = Perlin3D(pos.xyz, frequency, _IsTiling);
     }
     // Worley Noise 2D
     else if (_NoiseType == 3) {
@@ -59,10 +59,7 @@ void NoiseGenMain(uint3 id: SV_DispatchThreadID) {
     const float G = 0.5,    // 振幅变化倍率
                 FG = 2.0;   // 频率变化倍率
 
-    float   value = 0.0, 
-            frequency = _Frequency,
-            amplitude = 1.0,
-            sumAmplitude = 0.0;
+    float   value = 0.0;
 
     pos += _Seed * hash13(_Seed);
 
@@ -71,6 +68,10 @@ void NoiseGenMain(uint3 id: SV_DispatchThreadID) {
         value += 0.5 + 0.5 * hash31(id.xyz + 
                             _Seed * float3(hash11(id.x + _Seed), hash11(id.y + _Seed), hash11(id.z + _Seed)));
     } else if (_NoiseType <= 4){
+        float   frequency = _Frequency,
+                amplitude = 1.0,
+                sumAmplitude = 0.0;
+
         for (int i=0; i<_Octaves; i++) {
             sumAmplitude += amplitude;
             value += amplitude * getNoise(pos, frequency);
@@ -80,32 +81,45 @@ void NoiseGenMain(uint3 id: SV_DispatchThreadID) {
         value /= sumAmplitude;
         if (_Inverse) value = 1.0 - value;
     } else if (_NoiseType == 5) {
+        float   frequency = _Frequency/2.0,
+                amplitude = 1.0,
+                sumAmplitude = 0.0;
 
-        float v0 = 0.0, f0 = 4, a0 = 1.0, s0 = 0.0,
-              v1 = 0.0, f1 = _Frequency, a1 = 1.0, s1 = 0.0;
-        // Perlein-Worley Noise
+        float perlinFBM = 0.0;
+        for (int i=0; i<_Octaves*2; i++) {
+            sumAmplitude += amplitude;
+            perlinFBM += amplitude * Perlin3D(pos, frequency, _IsTiling);
+            amplitude *= G;
+            frequency *= FG;
+        }
+        perlinFBM /= sumAmplitude;
+
+        frequency = _Frequency,
+        amplitude = 1.0,
+        sumAmplitude = 0.0;
+
+        float worleyFBM = 0.0;
         for (int j=0; j<_Octaves; j++) {
-            s0 += a0;
-            v0 += a0 * (0.5 + 0.5 * Perlin3D(pos.xyz, f0, _IsTiling));
-            a0 *= G;
-            f0 *= FG;
+            sumAmplitude += amplitude;
+            worleyFBM += amplitude * Worley3D(pos, frequency, _IsTiling);
+            amplitude *= G;
+            frequency *= FG;
         }
-        v0 /= s0;
+        worleyFBM /= sumAmplitude;
+        worleyFBM = 1.0 - worleyFBM;
 
-        for (int i=0; i<_Octaves; i++) {
-            s1 += a1;
-            v1 += a1 * Worley3D(pos.xyz, f1, _IsTiling);
-            a1 *= G;
-            f1 *= FG;
-        }
-        v1 /= s1;
+        // perlinFBM = perlinFBM * 2.0 - 1.0;
+        // worleyFBM = worleyFBM * 2.0 - 1.0;
+
+        float   OldMin = worleyFBM,
+                OldMax = 1.0,
+                NewMin = -1.0,
+                NewMax = 1.0;
+        float PerlinWorley = NewMin + (((perlinFBM - OldMin)/(OldMax - OldMin))*(NewMax - NewMin));
         
-        float Perlin = v0;
-        float Worley = 1 - v1;
-        value = dilatePerlinWorley(Perlin, Worley, 0.8);
-        // value = (a * v0 + (1 - a) * (1 - v1));
-
-        // if (_Inverse) value = 1 - value;
+        
+        value = worleyFBM * perlinFBM;
+        // value = value * 0.5 + 0.5;
     }
 
     _Noise[id.xyz] = value;
