@@ -81,8 +81,9 @@ float hg(float a, float g)
 
 float lightMarch(float3 position) {
     float3 origin = position;
-    float3 dir = -_LightDir;
-    float2 rayToBox = rayBoxDst(_BoxMin, _BoxMin, origin, 1.0/dir);
+    float3 dir = _LightDir;
+    float2 rayToBox = rayBoxDst(_BoxMin, _BoxMax, origin, 1.0/dir);
+    // return rayToBox.y == 0.0;
     float2 range = float2(rayToBox.x, rayToBox.x + rayToBox.y);
 
     float transmittance = 1.0;
@@ -117,7 +118,7 @@ float4 frag(VaryingsDefault i): SV_Target {
     bool hitBox = rayToBox.y > 0 && rayToBox.x < depthEyeLinear;
     float2 range = float2(rayToBox.x, min(rayToBox.x + rayToBox.y, depthEyeLinear));
 
-    // float cosA = dot(dir, lightDir);
+    float cosA = dot(dir, _LightDir);
 
     float transmittance = 1.0;
     float lightEnergy = 0.0;
@@ -131,7 +132,8 @@ float4 frag(VaryingsDefault i): SV_Target {
             float density = getDensity(pos);
 
             float lightTransmittance = lightMarch(pos);
-            lightEnergy += _LightIntensity * lightTransmittance * density * step * transmittance;
+            return lightTransmittance;
+            lightEnergy += _LightIntensity * lightTransmittance * density * step * transmittance * hg(cosA, 0.2);
             transmittance *= beer(density * step);
 
             t += step;
@@ -139,6 +141,6 @@ float4 frag(VaryingsDefault i): SV_Target {
     }
 
 
-
+    // return cosA;
     return baseColor * transmittance + (1-transmittance) * _LightColor * lightEnergy;
 }

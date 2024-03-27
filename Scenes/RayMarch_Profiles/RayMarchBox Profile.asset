@@ -18,19 +18,19 @@ MonoBehaviour:
     value: 1
   tiling:
     overrideState: 1
-    value: {x: 1, y: 1, z: 1}
+    value: {x: 0.2, y: 0.2, z: 0.2}
   offset:
     overrideState: 1
-    value: {x: 66.55, y: 0, z: 0}
+    value: {x: 55.91, y: 15.7, z: 4.38}
   densityThreshold:
     overrideState: 1
-    value: 0.12
+    value: 0.27
   densityMultiplier:
     overrideState: 1
-    value: 1
+    value: 0.78
   steps:
     overrideState: 1
-    value: 8
+    value: 32
   color:
     overrideState: 1
     value: {r: 1, g: 1, b: 1, a: 1}

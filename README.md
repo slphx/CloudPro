@@ -14,7 +14,9 @@
 
 
 
+## 另. 大气效果
 
+![atmosphere](./assets/atmosphere.gif)
 
 
 
