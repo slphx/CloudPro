@@ -76,7 +76,7 @@ float4 frag(v2f i): SV_Target {
     light.color = _LightColor;
     light.intensity = _LightIntensity;
 
-    if (depth > 0) return baseColor;
+    // if (depth > 0) return baseColor;
 
     float3 inscattering = IntegrateInscattering(ori, dir, planet, light);
 

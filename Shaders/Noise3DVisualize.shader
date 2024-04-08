@@ -1,7 +1,9 @@
-Shader "Unlit/testUnlit"
+Shader "Unlit/Noise3DVisualize"
 {
     Properties
     {
+        _NoiseTex("Texture", 3D) = "white" {}
+        _SampleSlice("Slice", Range(0.0, 1.0)) = 0.0
         _Intensity("intensity", Range(1.0, 5.0)) = 1.0
     }
     SubShader

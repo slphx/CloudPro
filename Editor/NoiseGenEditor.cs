@@ -24,7 +24,10 @@ public class NoiseGenEditor: Editor {
             EditorGUILayout.PropertyField(this.serializedObject.FindProperty("octaves"));
             EditorGUILayout.PropertyField(this.serializedObject.FindProperty("sliceDepth"));
             EditorGUILayout.PropertyField(this.serializedObject.FindProperty("inverse"));
-            EditorGUILayout.PropertyField(this.serializedObject.FindProperty("visualize"));
+        }
+
+        if (GUILayout.Button ("Save")) {
+            noiseGenerator.Save();
         }
 
         EditorGUILayout.PropertyField(this.serializedObject.FindProperty("logTimer"));

@@ -70,6 +70,7 @@ float Perlin3D(float3 p, float frequency = 1.0, bool isTiling = false) {
         );
     }
 
+    // return 1.0 + 0.5 * perlin;
     return 0.5 + 1.0 * perlin;
 }
 

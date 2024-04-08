@@ -113,12 +113,13 @@ void NoiseGenMain(uint3 id: SV_DispatchThreadID) {
 
         float   OldMin = worleyFBM,
                 OldMax = 1.0,
-                NewMin = -1.0,
+                NewMin = 0.0,
                 NewMax = 1.0;
-        float PerlinWorley = NewMin + (((perlinFBM - OldMin)/(OldMax - OldMin))*(NewMax - NewMin));
+        float PerlinWorley = clamp(NewMin + (((perlinFBM - OldMin)/(OldMax - OldMin))*(NewMax - NewMin)), 0.0, 1.0);
         
         
-        value = worleyFBM * perlinFBM;
+        value = worleyFBM * perlinFBM * 2.0;
+        // value = PerlinWorley;
         // value = value * 0.5 + 0.5;
     }
 

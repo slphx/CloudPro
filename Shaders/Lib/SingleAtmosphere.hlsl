@@ -64,6 +64,10 @@ float3 IntegrateInscattering(float3 ori, float3 dir, in Planet planet, in Direct
     float3 totalM = 0.0;
 
     float2 DPA = 0.0;
+    float h0 = length(ori + (step/4.0) * dir - planet.center) - planet.radius;
+    float2 density0 = exp(-(h0.xx/planet.densityScaleHeight));
+    DPA += density0 * (step/2.0);
+    
     for (float t=range.x; t<range.y; t+=step) {
         float3 pos = ori + (t + step/2.0) * dir;
         float height = length(pos - planet.center) - planet.radius;
@@ -74,11 +78,8 @@ float3 IntegrateInscattering(float3 ori, float3 dir, in Planet planet, in Direct
 
         float3 extinction = exp(-(opticalDepth.x*planet.extinctionR + opticalDepth.y*planet.extinctionM));
 
-        float3 localR = localDensity.x * extinction;
-        float3 localM = localDensity.y * extinction;
-
-        totalR += localR * step;
-        totalM += localM * step;
+        totalR += localDensity.x * extinction * step;
+        totalM += localDensity.y * extinction * step;
         
         DPA += localDensity * step;
     }

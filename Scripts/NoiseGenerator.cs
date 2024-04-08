@@ -1,6 +1,7 @@
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEditor;
 
 [ExecuteInEditMode]
 public class NoiseGenerator : MonoBehaviour
@@ -37,17 +38,12 @@ public class NoiseGenerator : MonoBehaviour
     [SerializeField]
     bool logTimer = false;
 
-    [Tooltip("需使用 NoisePlane.Mat")]
-    [SerializeField]
-    bool visualize = false;
-
     public RenderTexture noiseTex;
 
     int length;
 
 
     const int threadGroupSize = 8;
-
 
     void OnValidate() {
         if (seed < 0) seed = 0;
@@ -91,10 +87,8 @@ public class NoiseGenerator : MonoBehaviour
         int numThreadGroups = Mathf.CeilToInt(resolution / (float)threadGroupSize);
         noiseCompute.Dispatch(kernel, numThreadGroups, numThreadGroups, numThreadGroups);
 
-        if (visualize) {
-            GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_NoiseTex", noiseTex);
-            GetComponent<MeshRenderer>().sharedMaterial.SetFloat("_SampleSlice", sliceDepth);
-        }
+        GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_NoiseTex", noiseTex);
+        GetComponent<MeshRenderer>().sharedMaterial.SetFloat("_SampleSlice", sliceDepth);
 
         if (logTimer) {
             Debug.Log("Completed: " + sw.ElapsedMilliseconds + " ms.");
@@ -103,5 +97,22 @@ public class NoiseGenerator : MonoBehaviour
 
     void OnDisable() {
         noiseTex.Release();
+    }
+
+    // https://forum.unity.com/threads/rendertexture-3d-to-texture3d.928362/
+    public void Save() {
+        string pathWithoutAssetsAndExtension = "test3D";
+        int width = noiseTex.width, height = noiseTex.height, depth = noiseTex.volumeDepth;
+        var a = new NativeArray<byte>(width * height * depth * 4, Allocator.Persistent, NativeArrayOptions.UninitializedMemory); //change if format is not 8 bits (i was using R8_UNorm) (create a struct with 4 bytes etc)
+        UnityEngine.Rendering.AsyncGPUReadback.RequestIntoNativeArray(ref a, noiseTex, 0, (_) =>
+        {
+            Texture3D output = new Texture3D(width, height, depth, noiseTex.graphicsFormat, UnityEngine.Experimental.Rendering.TextureCreationFlags.None);
+            output.SetPixelData(a, 0);
+            output.Apply(updateMipmaps: false, makeNoLongerReadable: true);
+            AssetDatabase.CreateAsset(output, $"Assets/{pathWithoutAssetsAndExtension}.asset");
+            AssetDatabase.SaveAssetIfDirty(output);
+            a.Dispose();
+            noiseTex.Release();
+        });
     }
 }

@@ -3,7 +3,7 @@
 
 #include "structs.hlsl"
 
-#define PI 3.1415926
+#define PI 3.141592653
 
 float3 GetWorldSpacePosition(float2 uv, float depth, float4x4 _InverseProjectionMatrix, float4x4 _InverseViewMatrix) {
     float4 viewSpacePosition = mul(_InverseProjectionMatrix, float4(-1.0 + 2.0*uv, depth, 1.0));
@@ -31,6 +31,21 @@ float2 PointIntersect(float3 ori, float3 dir, float3 p) {
     float t = dot(PO, dir);
     float dist = sqrt(dot(PO, PO) - t*t);
     return (t, dist);
+}
+
+float2 rayBoxDst(float3 boundsMin, float3 boundsMax, float3 rayOrigin, float3 invRaydir) 
+{
+    float3 t0 = (boundsMin - rayOrigin) * invRaydir;
+    float3 t1 = (boundsMax - rayOrigin) * invRaydir;
+    float3 tmin = min(t0, t1);
+    float3 tmax = max(t0, t1);
+
+    float dstA = max(max(tmin.x, tmin.y), tmin.z); //进入点
+    float dstB = min(tmax.x, min(tmax.y, tmax.z)); //出去点
+
+    float dstToBox = max(0, dstA);
+    float dstInsideBox = max(0, dstB - dstToBox);
+    return float2(dstToBox, dstInsideBox);
 }
 
 

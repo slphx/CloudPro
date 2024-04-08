@@ -6,10 +6,13 @@ using UnityEngine;
 [ImageEffectAllowedInSceneView]
 public class CloudSky : MonoBehaviour
 {
-    // properties
+
     [SerializeField]
     Light sun;
 
+    // Atmosphere
+
+    // properties
     [SerializeField, Range(0, 10.0f)]
     float RayleighScatterCoef = 1;
     [SerializeField, Range(0, 10.0f)]
@@ -26,7 +29,6 @@ public class CloudSky : MonoBehaviour
     // [SerializeField, Range(0.1f, 10.0f)]
     // float DistanceScale = 1.0f;
 
-
     // constants
     const float AtmosphereHeight = 80000.0f;
     const float PlanetRadius = 6371000.0f;
@@ -34,6 +36,8 @@ public class CloudSky : MonoBehaviour
     Vector4 RayleighSct = new Vector4(5.8f, 13.5f, 33.1f, 0.0f) * 1e-6f;
     Vector4 MieSct = new Vector4(2.0f, 2.0f, 2.0f, 0.0f) * 1e-5f;
 
+
+    // Cloud
 
 
     Shader shader;
