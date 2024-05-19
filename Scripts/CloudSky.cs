@@ -1,6 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using Unity.Mathematics;
+
+using static Unity.Mathematics.math;
 
 [ExecuteInEditMode]
 [ImageEffectAllowedInSceneView]
@@ -38,7 +39,35 @@ public class CloudSky : MonoBehaviour
 
 
     // Cloud
+    [SerializeField]
+    GameObject noiseObject;
 
+    [SerializeField]
+    Vector2 cloudHeight = float2(1500f, 4000f);     // 云层覆盖高度
+
+    [SerializeField]
+    Vector2 scale = float2(0.001f, 0.01f);    // x 为采样时 pos 的系数，y 为采样时 offset 的系数
+    
+    [SerializeField]
+    Vector3 offset = float3(0.0f);
+
+    [SerializeField, Range(0, 1)]
+    float densityThreshold = 0.04f;
+
+    [SerializeField, Range(0, 1)]
+    float densityMultiplier = 1.0f;
+
+    [SerializeField, Range(0, 10)]
+    float lightCloudCoef = 1.0f;
+
+    [SerializeField, Range(0, 3)]
+    float cloudAmbient = 1f;
+
+    [SerializeField]
+    Texture2D coverageTex;
+
+    [SerializeField]
+    Vector2 coverageOffset = float2(0.0f);
 
     Shader shader;
     Material material;
@@ -75,6 +104,21 @@ public class CloudSky : MonoBehaviour
         material.SetVector("_ExtinctionM", MieSct * MieExtinctionCoef);
         material.SetFloat("_MieG", MieG);
 
+        // cloud
+        material.SetVector("_CloudHeight", cloudHeight);
+        material.SetVector("_Scale", scale);
+        material.SetVector("_Offset", offset);
+        material.SetFloat("_DensityThreshold", densityThreshold);
+        material.SetFloat("_DensityMultiplier", densityMultiplier);
+        material.SetFloat("_LightCloudCoef", lightCloudCoef);
+        material.SetFloat("_CloudAmbient", cloudAmbient);
+
+        // noise
+        CloudNoiseGen noiseGenerator = noiseObject.GetComponent<CloudNoiseGen>();
+
+        material.SetTexture(Shader.PropertyToID("_NoiseTex"), noiseGenerator.noiseTex);
+        material.SetTexture(Shader.PropertyToID("_CoverageTex"), coverageTex);
+        material.SetVector("_CoverageOffset", coverageOffset);
 
         Graphics.Blit(src, dest, material);
     }

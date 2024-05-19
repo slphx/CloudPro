@@ -12,10 +12,10 @@ float2 lightSampling(float3 pos, in DirectionalLight light, in Planet planet) {
     float3 dir = -light.dir;
 
     // 被地球遮挡则直接返回
-    float3 planetIntersection = ShpereIntersect(ori, dir, planet.center, planet.radius);
+    float3 planetIntersection = SphereIntersect(ori, dir, planet.center, planet.radius);
     if (planetIntersection.z && planetIntersection.x > 0) return 1e8;
 
-    float3 intersection = ShpereIntersect(ori, dir, planet.center, planet.globalAtmosphereHeight());
+    float3 intersection = SphereIntersect(ori, dir, planet.center, planet.globalAtmosphereHeight());
     if (intersection.y <= 0 || !intersection.z) return 0.0;
     intersection.x = max(0, intersection.x);
 
@@ -46,8 +46,8 @@ void ApplyPhaseFunction(inout float3 scatterR, inout float3 scatterM, float cosA
 float3 IntegrateInscattering(float3 ori, float3 dir, in Planet planet, in DirectionalLight light) {
     const int stepCount = 32;
 
-    float3 planetIntersection = ShpereIntersect(ori, dir, planet.center, planet.radius);
-    float3 intersection = ShpereIntersect(ori, dir, planet.center, planet.globalAtmosphereHeight());
+    float3 planetIntersection = SphereIntersect(ori, dir, planet.center, planet.radius);
+    float3 intersection = SphereIntersect(ori, dir, planet.center, planet.globalAtmosphereHeight());
 
     // 不经过大气层
     // if (!planetIntersection.z) return baseColor;

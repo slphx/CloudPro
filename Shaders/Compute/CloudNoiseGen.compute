@@ -1,0 +1,72 @@
+#pragma kernel CloudNoiseGen
+
+#define THREAD_GROUP_SIZE 8
+
+#include "Noiselib/NoiseLib.hlsl"
+
+int _Resolution;
+float _InvResolution;
+int _Seed;
+float _Frequency;
+int _Octaves;
+
+RWTexture3D<float4> _Noise;
+
+
+[numthreads(THREAD_GROUP_SIZE, THREAD_GROUP_SIZE, THREAD_GROUP_SIZE)]
+void CloudNoiseGen(uint3 id: SV_DispatchThreadID) {
+    float3 pos = float3(id.x, id.y, id.z) * _InvResolution;
+
+    const float G = 0.5,    // 振幅变化倍率
+                FG = 2.0;   // 频率变化倍率
+
+
+    float4 value = 0.0;
+
+    pos += _Seed * hash13(_Seed);
+
+    // Perlin Worley
+    float   frequency = _Frequency/2.0,
+    amplitude = 1.0,
+    sumAmplitude = 0.0;
+
+    float perlinFBM = 0.0;
+    for (int i=0; i<_Octaves*2; i++) {
+    sumAmplitude += amplitude;
+    perlinFBM += amplitude * Perlin3D(pos, frequency, 1);
+    amplitude *= G;
+    frequency *= FG;
+    }
+    perlinFBM /= sumAmplitude;
+
+    frequency = _Frequency,
+    amplitude = 1.0,
+    sumAmplitude = 0.0;
+
+    float worleyFBM = 0.0;
+    for (int j=0; j<_Octaves; j++) {
+    sumAmplitude += amplitude;
+    worleyFBM += amplitude * Worley3D(pos, frequency, 1);
+    amplitude *= G;
+    frequency *= FG;
+    }
+    worleyFBM /= sumAmplitude;
+    worleyFBM = 1.0 - worleyFBM;
+
+    // perlinFBM = perlinFBM * 2.0 - 1.0;
+    // worleyFBM = worleyFBM * 2.0 - 1.0;
+
+    float   OldMin = worleyFBM,
+        OldMax = 1.0,
+        NewMin = 0.0,
+        NewMax = 1.0;
+    float PerlinWorley = clamp(NewMin + (((perlinFBM - OldMin)/(OldMax - OldMin))*(NewMax - NewMin)), 0.0, 1.0);
+
+    frequency = _Frequency;
+    value.x = worleyFBM * perlinFBM * 2.0;
+    value.y = 1.0 - fbmWorley3D(pos, frequency, _Octaves, 1);
+    value.z = 1.0 - fbmWorley3D(pos, 2*frequency, _Octaves, 1);
+    value.w = 1.0 - fbmWorley3D(pos, 4*frequency, _Octaves, 1);
+
+    _Noise[id.xyz] = value;
+}

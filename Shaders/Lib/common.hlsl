@@ -14,7 +14,7 @@ float3 GetWorldSpacePosition(float2 uv, float depth, float4x4 _InverseProjection
 }
 
 // 当无交点时，z 分量返回 0 (通常情况返回 1)
-float3 ShpereIntersect(float3 ori, float3 dir, float3 center, float radius) {
+float3 SphereIntersect(float3 ori, float3 dir, float3 center, float radius) {
     float3 PO = center - ori;
     float t = dot(PO, dir);
     float ht2 = radius * radius - dot(PO, PO) + t * t;
@@ -23,6 +23,23 @@ float3 ShpereIntersect(float3 ori, float3 dir, float3 center, float radius) {
 
     float ht = sqrt(ht2);
     return float3(t - ht, t + ht, 1.0);
+}
+
+float2 SphericalShellIntersect(float3 ori, float3 dir, float center, float innerR, float outerR) {
+    float3 intersectionInner = SphereIntersect(ori, dir, center, innerR);
+    float3 intersectionOuter = SphereIntersect(ori, dir, center, outerR);
+
+    float2 range;
+    range.x = intersectionInner.x > 0 ? intersectionInner.x : intersectionInner.y;
+    range.y = intersectionOuter.x > 0 ? intersectionOuter.x : intersectionOuter.y;
+    range = max(0.0, range);
+    if (range.x > range.y) {
+        float t;
+        t = range.x;
+        range.x = range.y;
+        range.y = t;
+    }
+    return range;
 }
 
 // 返回距离该点最近距离的取值 t 与该最近距离

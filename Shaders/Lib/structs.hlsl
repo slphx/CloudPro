@@ -24,4 +24,16 @@ struct DirectionalLight {
     float intensity;
 };
 
+struct Cloud {
+    float3 heightMin;
+    float3 heightMax;
+    float2 scale;
+    float3 offset;
+    float densityThreshold;
+    float densityMultiplier;
+    float lightCloudCoef;
+    float cloudAmbient;
+    float2 coverageOffset;
+};
+
 #endif

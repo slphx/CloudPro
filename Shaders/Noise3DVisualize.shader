@@ -4,7 +4,8 @@ Shader "Unlit/Noise3DVisualize"
     {
         _NoiseTex("Texture", 3D) = "white" {}
         _SampleSlice("Slice", Range(0.0, 1.0)) = 0.0
-        _Intensity("intensity", Range(1.0, 5.0)) = 1.0
+        _Intensity("Intensity", Range(0.1, 5.0)) = 1.0
+        [Enum(all, 0, r, 1, g, 2, b, 3, a, 4)]_ShowPath("ShowPath", Int) = 0
     }
     SubShader
     {
@@ -37,6 +38,7 @@ Shader "Unlit/Noise3DVisualize"
             float4 _NoiseTex_ST;
             float _SampleSlice;
             float _Intensity;
+            int _ShowPath;
     
 
             v2f vert (appdata v)
@@ -50,6 +52,14 @@ Shader "Unlit/Noise3DVisualize"
             fixed4 frag (v2f i) : SV_Target
             {
                 float4 col = tex3D(_NoiseTex, float3(i.uv, _SampleSlice)) * _Intensity;
+                col.w = pow(col.w, 2.2);
+                // col = 0;
+                if (_ShowPath == 1) col = col.r;
+                if (_ShowPath == 2) col = col.g;
+                if (_ShowPath == 3) col = col.b;
+                if (_ShowPath == 4) col = col.a;
+                col.a = 1.0;
+
                 return col;
             }
             ENDCG

@@ -1,4 +1,5 @@
-#include "lib/SingleAtmosphere.hlsl"
+#include "Lib/SingleAtmosphere.hlsl"
+#include "Lib/cloud.hlsl"
 
 struct appdata {
     float4 vertex: POSITION;
@@ -46,6 +47,17 @@ float3 _ExtinctionR;
 float3 _ExtinctionM;
 float _MieG;
 
+// cloud
+float2 _CloudHeight;
+float2 _Scale;
+float3 _Offset;
+float _DensityThreshold;
+float _DensityMultiplier;
+float _LightCloudCoef;
+float _CloudAmbient;
+float2 _CoverageOffset;
+
+
 // fragment shader
 float4 frag(v2f i): SV_Target {
     float4 baseColor = tex2D(_MainTex, i.uv);
@@ -76,11 +88,26 @@ float4 frag(v2f i): SV_Target {
     light.color = _LightColor;
     light.intensity = _LightIntensity;
 
-    // if (depth > 0) return baseColor;
+    // set cloud
+    Cloud cloud;
+    cloud.heightMin = _CloudHeight.x;
+    cloud.heightMax = _CloudHeight.y;
+    cloud.scale = _Scale;
+    cloud.offset = _Offset;
+    cloud.densityThreshold = _DensityThreshold;
+    cloud.densityMultiplier = _DensityMultiplier;
+    cloud.lightCloudCoef = _LightCloudCoef;
+    cloud.cloudAmbient = _CloudAmbient;
+    cloud.coverageOffset = _CoverageOffset;
 
-    float3 inscattering = IntegrateInscattering(ori, dir, planet, light);
+    if (depth > 0) return baseColor;
 
-    // return baseColor;
-    return float4(inscattering, 1.0);
+    float4 cloudColor = SampleCloud(ori, dir, planet, light, cloud);
+    // return cloudColor;
+
+    float3 color = IntegrateInscattering(ori, dir, planet, light);
+    // color = 0;
+    color = color * cloudColor.w + cloudColor.xyz * (1 - cloudColor.w);
+    return float4(color, 1.0);
 
 }

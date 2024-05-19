@@ -12,19 +12,11 @@
 
 ![image-20240408212511324](./assets/image-20240408212511324.png)
 
-![image-20240408212532113](./assets/image-20240408212532113.png)
+![3-4-b1](./assets/3-4-b1.png)
 
+![3-4-g4](./assets/3-4-g4.png)
 
-
-## 另. 大气效果
-
-![atmosphere](./assets/atmosphere.gif)
-
-
-
-
-
-
+![3-4-r5](./assets/3-4-r5.png)
 
 ## Reference
 

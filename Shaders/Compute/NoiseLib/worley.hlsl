@@ -42,4 +42,22 @@ float Worley3D(float3 p, float frequency = 1.0, bool isTiling = false) {
     return min(minD, 1.0);
 }
 
+float fbmWorley3D(float3 p, float frequency = 1.0, float octaves = 1.0, bool isTiling = false) {
+    const float G = 0.5,    // 振幅变化倍率
+                FG = 2.0;   // 频率变化倍率
+    
+    float amplitude = 1.0;
+    float sumAmplitude = 0.0;
+    float value = 0.0;
+
+    for (int i=0; i<octaves; i++) {
+        sumAmplitude += amplitude;
+        value += amplitude * Worley3D(p, frequency, 1);
+        amplitude *= G;
+        frequency *= FG;
+    }
+    value /= sumAmplitude;
+    return value;
+}
+
 #endif
